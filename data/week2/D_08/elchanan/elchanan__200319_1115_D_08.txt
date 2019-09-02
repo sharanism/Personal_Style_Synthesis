@@ -1,0 +1,3 @@
+time	x	y	pressure	tiltX	tiltY	azimuth	sidePressure	rotation
+Pause
+Pattern D08 took 64.71951726800762 seconds.
