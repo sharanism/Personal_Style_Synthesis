@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 
 def get_data_file(path):
@@ -36,6 +37,7 @@ def get_stripes(data):
     stripe_list = []
     stripe = dict()
     counter = 0
+    waiting_time = 0.0
     for i, time in enumerate(data['time']):
         if time == 'Pause':
             if i - counter < 2:
@@ -63,21 +65,23 @@ def calc_dist_1D(old_point, new_point):
     """
     return abs(float(new_point) - float(old_point))
 
-
+################################################################################
 ####################
 # Geometric length #
 ####################
+################################################################################
 def calc_dist_of_stripe(x_array, y_array):
     """
+    @TODO units? after dividing by 100 is cm?
     :param x_array: array of all the x values
     :param y_array: array of all the y values
-    :return: the incremental distance in a single stripe
+    :return: the incremental distance in a single stripe, in cm (I think)
     """
-    dist = 0
+    dist = 0.0
     for i in range(1, len(x_array)):
         dist += calc_dist_2D(x_array[i-1], x_array[i], y_array[i-1], y_array[i])
 
-    return dist
+    return dist / 100.0
 
 
 def calc_file_dist(stripes_list):
@@ -85,7 +89,7 @@ def calc_file_dist(stripes_list):
     :param stripes_list: list of all the stripes, every stripe represent as dict
     :return: the total distance of the drawing
     """
-    dist = 0
+    dist = 0.0
     for stripe in stripes_list:
         dist += calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))
 
@@ -93,14 +97,23 @@ def calc_file_dist(stripes_list):
 
 
 def calc_dist_average_of_stripe(stripes_list):
+    """
+    :param stripes_list: list of all the stripes, every stripe represent as dict
+    :return: average of geometric length of a single stripe
+    """
     return float(calc_file_dist(stripes_list)) / float(len(stripes_list))
 
-
+################################################################################
 ###############
 # Time length #
 ###############
+################################################################################
 def calc_time_of_stripe(time_array):
-    time = 0
+    """
+    :param time_array: array of all the time of the given stripe
+    :return: the incremental time of a single stripe
+    """
+    time = 0.0
     for i in range(1, len(time_array)):
         time += calc_dist_1D(float(time_array[i - 1]), float(time_array[i]))
 
@@ -108,7 +121,11 @@ def calc_time_of_stripe(time_array):
 
 
 def calc_file_time(stripes_list):
-    time = 0
+    """
+    :param stripes_list: list of all the stripes, every stripe represent as dict
+    :return: the total time of the drawing (without waiting between stripes)
+    """
+    time = 0.0
     for stripe in stripes_list:
         time += calc_time_of_stripe(list(stripe['time']))
 
@@ -116,12 +133,95 @@ def calc_file_time(stripes_list):
 
 
 def calc_time_average_of_stripe(stripes_list):
+    """
+    :param stripes_list: list of all the stripes, every stripe represent as dict
+    :return: average time of a single stripe
+    """
     return float(calc_file_time(stripes_list)) / float(len(stripes_list))
 
 
+def calc_waiting_time(stripe_list):
+    waiting_time = 0.0
+    for i in range(1, len(stripe_list)):
+        waiting_time += (float(list(stripe_list[i]['time'])[0]) - float(list(stripe_list[i-1]['time'])[-1]))
+
+    return waiting_time
+
+################################################################################
+############
+# Pressure #
+############
+################################################################################
+def calc_pressure_average_of_stripe(pressure_array):
+    """
+    :param stripes_list: list of all the stripes, every stripe represent as dict
+    :return: average time of a single stripe
+    """
+    pressure = 0.0
+    for i in range(len(pressure_array)):
+        pressure += float(pressure_array[i])
+
+    return float(pressure) / float(len(pressure_array))
+
+
+def calc_pressure_average_of_file(stripes_list):
+    """
+    :param stripes_list: list of all the stripes, every stripe represent as dict
+    :return: the total time of the drawing (without waiting between stripes)
+    """
+    pressure = 0.0
+    for stripe in stripes_list:
+        pressure += calc_pressure_average_of_stripe(list(stripe['pressure']))
+
+    return float(pressure) / float(len(stripes_list))
+
+################################################################################
+#########
+# Speed #
+#########
+################################################################################
+def calc_average_speed_in_stripe(stripe):
+    """
+    @TODO units? cm/sec?
+    :param stripe: dict of feathers and their values
+    :return: the average speed in stripe
+    """
+    return float(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))) / \
+           float(calc_time_of_stripe(list(stripe['time'])))
+
+
+def calc_average_speed_in_file(stripe_list):
+    """
+    @TODO units? cm/sec?
+    :param stripe_list: list of all the stripes, every stripe represent as dict
+    :return: the average speed in the file
+    """
+    speed = 0.0
+    for stripe in stripe_list:
+        speed += calc_average_speed_in_stripe(stripe)
+
+    return float(speed) / float(len(stripe_list))
+
+
+def plot_speed_vs_time(stripe_list):
+    """
+    plot graph of speed vs time # (its not really time)
+    :param stripe_list: list of all the stripes, every stripe represent as dict
+    """
+    x = np.arange(len(stripe_list))
+    y = np.zeros(len(stripe_list))
+    for i, stripe in enumerate(stripe_list):
+        y[i] = calc_average_speed_in_stripe(stripe)
+
+    plt.scatter(x, y)
+    plt.show()
+
+
+################################################################################
 #########
 # Tests #
 #########
+################################################################################
 input1 = "data/week1/D_01/aliza/aliza__130319_0935_D_01.txt"
 input2 = "data/week1/D_01/zoey/zoey__130319_1208_D_01.txt"
 stripe_list1 = get_stripes(get_data_file(input1))
@@ -130,14 +230,18 @@ stripe_list2 = get_stripes(get_data_file(input2))
 print("In Dubby picture: ")
 print()
 
-print("Total geometric length of Aliza: " + str(calc_file_dist(stripe_list1)))
-print("Average geometric length of Aliza: " + str(calc_dist_average_of_stripe(stripe_list1)))
-print("Total time of Aliza: " + str(calc_file_time(stripe_list1)))
-print("Average geometric length of Aliza: " + str(calc_time_average_of_stripe(stripe_list1)))
+print("Total geometric length of Aliza: " + "%.3f" % calc_file_dist(stripe_list1) + "cm")
+print("Average geometric length of Aliza per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list1) + "cm")
+print("Total time of Aliza: " + "%.3f" % calc_file_time(stripe_list1) + "sec")
+print("Total waiting time of Aliza: " + "%.3f" % calc_waiting_time(stripe_list1) + "sec")
+print("Average time of Aliza per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list1) + "sec")
+print("Average speed of Aliza: " + "%.3f" % calc_average_speed_in_file(stripe_list1) + "cm/sec")
 
 print()
 
-print("Total geometric length of Zoey: " + str(calc_file_dist(stripe_list2)))
-print("Average Geometric length of Zoey: " + str(calc_dist_average_of_stripe(stripe_list2)))
-print("Total time of Zoey: " + str(calc_file_time(stripe_list2)))
-print("Average geometric length of Zoey: " + str(calc_time_average_of_stripe(stripe_list2)))
+print("Total geometric length of Zoey: " + "%.3f" % calc_file_dist(stripe_list2) + "cm")
+print("Average Geometric length of Zoey per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list2) + "cm")
+print("Total time of Zoey: " + "%.3f" % calc_file_time(stripe_list2) + "sec")
+print("Total waiting time of Zoey: " + "%.3f" % calc_waiting_time(stripe_list2) + "sec")
+print("Average time of Zoey per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list2) + "sec")
+print("Average speed of Zoey: " + "%.3f" % calc_average_speed_in_file(stripe_list2) + "cm/sec")
