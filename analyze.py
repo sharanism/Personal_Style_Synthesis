@@ -5,26 +5,9 @@ import math
 import matplotlib.pyplot as plt
 import scipy.fftpack
 
+
 def get_data_file(path):
     return pd.read_csv(path, delimiter='\t')
-
-
-# def get_all_data_without_pause(path):
-#     stripe_list = []
-#     stripe = dict()
-#     counter = 0
-#     for i, time in enumerate(data['time']):
-#         if time == 'Pause':
-#             if i - counter < 2:
-#                 counter = i + 1
-#                 continue
-#             for column in data:
-#                 stripe[column] = data[column][counter:i]
-#             counter = i + 1
-#             stripe_list.append(stripe)
-#             stripe = dict()
-#
-#     return stripe_list
 
 
 def get_all_files_of_person(input_name):
@@ -102,10 +85,12 @@ def calc_dist_of_stripe(x_array, y_array):
     :return: the incremental distance in a single stripe, in cm (I think)
     """
     dist = 0.0
+    arr = []
     for i in range(1, len(x_array)):
+        arr.append(calc_dist_2D(x_array[i-1], x_array[i], y_array[i-1], y_array[i]))
         dist += calc_dist_2D(x_array[i-1], x_array[i], y_array[i-1], y_array[i])
 
-    return dist / 100.0
+    return dist / 100.0, arr
 
 
 def calc_file_dist(stripes_list):
@@ -116,8 +101,8 @@ def calc_file_dist(stripes_list):
     dist = 0.0
     arr = []
     for stripe in stripes_list:
-        arr.append(calc_dist_of_stripe(list(stripe['x']), list(stripe['y'])))
-        dist += calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))
+        arr.append(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[0])
+        dist += calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[0]
 
     return int(dist), arr
 
@@ -130,17 +115,12 @@ def calc_dist_average_of_stripe(stripes_list):
     return float(calc_file_dist(stripes_list)[0]) / float(len(stripes_list))
 
 
-# def get_stripe_distance_std(stripe):
-#     print(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[0])
-#     arr = np.asarray(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[1])
-#     print(np.average(arr))
-#     print(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[1])
-#     return calc_std(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[1])
-#
-#
-# def get_file_distance_std(stripes_list):
-#     return calc_std(calc_file_dist(stripes_list)[1])
+def get_stripe_distance_std(stripe):
+    return calc_std(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[1])
 
+
+def get_file_distance_std(stripes_list):
+    return calc_std(calc_file_dist(stripes_list)[1])
 
 ################################################################################
 ###############
@@ -225,7 +205,7 @@ def calc_average_speed_in_stripe(stripe):
     :param stripe: dict of feathers and their values
     :return: the average speed in stripe
     """
-    return float(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))) / \
+    return float(calc_dist_of_stripe(list(stripe['x']), list(stripe['y']))[0]) / \
            float(calc_time_of_stripe(list(stripe['time'])))
 
 
@@ -305,24 +285,22 @@ input2 = "data/week01/D_01/zoey/zoey__130319_1208_D_01.txt"
 stripe_list1 = get_stripes(get_data_file(input1))
 stripe_list2 = get_stripes(get_data_file(input2))
 
-length_vs_time(stripe_list1[0])
+print("In Dubby picture: ")
+print()
 
-# print("In Dubby picture: ")
-# print()
-#
-# print("Total geometric length of Aliza: " + "%.3f" % calc_file_dist(stripe_list1)[0] + "cm")
-# print("Average geometric length of Aliza per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list1) + "cm")
-# print("Total time of Aliza: " + "%.3f" % calc_file_time(stripe_list1) + "sec")
-# print("Total waiting time of Aliza: " + "%.3f" % calc_waiting_time(stripe_list1) + "sec")
-# print("Average time of Aliza per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list1) + "sec")
-# print("Average speed of Aliza: " + "%.3f" % calc_average_speed_in_file(stripe_list1) + "cm/sec")
-#
-# print()
-#
-# print("Total geometric length of Zoey: " + "%.3f" % calc_file_dist(stripe_list2)[0] + "cm")
-# print("Average Geometric length of Zoey per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list2) + "cm")
-# print("Total time of Zoey: " + "%.3f" % calc_file_time(stripe_list2) + "sec")
-# print("Total waiting time of Zoey: " + "%.3f" % calc_waiting_time(stripe_list2) + "sec")
-# print("Average time of Zoey per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list2) + "sec")
-# print("Average speed of Zoey: " + "%.3f" % calc_average_speed_in_file(stripe_list2) + "cm/sec")
+print("Total geometric length of Aliza: " + "%.3f" % calc_file_dist(stripe_list1)[0] + "cm")
+print("Average geometric length of Aliza per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list1) + "cm")
+print("Total time of Aliza: " + "%.3f" % calc_file_time(stripe_list1) + "sec")
+print("Total waiting time of Aliza: " + "%.3f" % calc_waiting_time(stripe_list1) + "sec")
+print("Average time of Aliza per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list1) + "sec")
+print("Average speed of Aliza: " + "%.3f" % calc_average_speed_in_file(stripe_list1) + "cm/sec")
+
+print()
+
+print("Total geometric length of Zoey: " + "%.3f" % calc_file_dist(stripe_list2)[0] + "cm")
+print("Average Geometric length of Zoey per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list2) + "cm")
+print("Total time of Zoey: " + "%.3f" % calc_file_time(stripe_list2) + "sec")
+print("Total waiting time of Zoey: " + "%.3f" % calc_waiting_time(stripe_list2) + "sec")
+print("Average time of Zoey per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list2) + "sec")
+print("Average speed of Zoey: " + "%.3f" % calc_average_speed_in_file(stripe_list2) + "cm/sec")
 
