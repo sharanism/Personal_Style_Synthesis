@@ -274,13 +274,6 @@ def length_vs_time(stripe):
     plt.show()
 
 
-def length_vs_time2(stripe):
-    x = np.asarray(stripe['time'])
-    y = np.asarray(get_array_of_destances(stripe['x'], stripe['y']))
-    plt.plot(x, y)
-    plt.show()
-
-
 ################################################################################
 #########
 # Tests #
