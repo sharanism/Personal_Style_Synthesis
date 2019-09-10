@@ -39,6 +39,7 @@ def get_stripes(data):
     """
     stripe_list = []
     stripe = dict()
+    all_stripe_as_one = dict()
     counter = 0
     for i, time in enumerate(data['time']):
         if time == 'Pause':
@@ -47,11 +48,27 @@ def get_stripes(data):
                 continue
             for column in data:
                 stripe[column] = data[column][counter:i]
+                if column in list(all_stripe_as_one.keys()):
+                    all_stripe_as_one[column].append(data[column][counter:i])
+                else:
+                    all_stripe_as_one[column] = data[column][counter:i]
             counter = i + 1
             stripe_list.append(stripe)
             stripe = dict()
 
     return stripe_list
+
+
+def get_stripes_as_one(stripe_list):
+    for stripe in stripe_list:
+        for column in stripe.keys():
+            stripe[column] = list(stripe[column])
+
+    for key, value in stripe_list[0].items():
+        for i in range(1, len(stripe_list)):
+            value.extend(stripe_list[i][key])
+
+    return stripe_list[0]
 
 
 def calc_dist_2D(old_x, new_x, old_y, new_y):
@@ -71,6 +88,7 @@ def calc_dist_1D(old_point, new_point):
 def calc_std(num_array):
     np_array = np.asarray(num_array)
     return np.std(np_array)
+
 
 ################################################################################
 ####################
@@ -235,7 +253,6 @@ def plot_speed_vs_stripeIndex(stripe_list):
     plt.scatter(x, y)
     plt.show()
 
-
 ################################################################################
 ###############
 # Frequencies #
@@ -253,27 +270,16 @@ def length_vs_time(stripe):
     x = np.asarray(stripe['time'])
     y = np.asarray(get_array_of_destances(list(stripe['x']), list(stripe['y'])))
 
-    # Number of samplepoints
-    N = int(len(stripe))
-    # sample spacing
-    T = 1.0 / 200.0
-    # x = np.linspace(0.0, N * T, N)
-    # y = np.sin(50.0 * 2.0 * np.pi * x) + 0.5 * np.sin(80.0 * 2.0 * np.pi * x)
-    yf = scipy.fftpack.fft(y)
-    xf = np.linspace(0.0, 1.0 / (2.0 * N), int(N / 2))
-
-    fig, ax = plt.subplots()
-    ax.plot(xf, 2.0 / N * np.abs(yf[:N // 2]))
+    plt.plot(x, y)
     plt.show()
 
-    # t = np.arange(20)
-    # sp = np.fft.fft(np.sin(t))
-    # freq = np.fft.fftfreq(t.shape[-1])
-    # plt.plot(freq, sp.real, freq, sp.imag)
-    # plt.show()
-    # #
-    # # plt.plot(x, y)
-    # # plt.show()
+
+def length_vs_time2(stripe):
+    x = np.asarray(stripe['time'])
+    y = np.asarray(get_array_of_destances(stripe['x'], stripe['y']))
+    plt.plot(x, y)
+    plt.show()
+
 
 ################################################################################
 #########
@@ -283,7 +289,9 @@ def length_vs_time(stripe):
 input1 = "data/week01/D_01/aliza/aliza__130319_0935_D_01.txt"
 input2 = "data/week01/D_01/zoey/zoey__130319_1208_D_01.txt"
 stripe_list1 = get_stripes(get_data_file(input1))
-stripe_list2 = get_stripes(get_data_file(input2))
+# stripe_list2 = get_stripes(get_data_file(input2))
+
+length_vs_time(get_stripes_as_one(stripe_list1))
 
 print("In Dubby picture: ")
 print()
@@ -295,12 +303,11 @@ print("Total waiting time of Aliza: " + "%.3f" % calc_waiting_time(stripe_list1)
 print("Average time of Aliza per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list1) + "sec")
 print("Average speed of Aliza: " + "%.3f" % calc_average_speed_in_file(stripe_list1) + "cm/sec")
 
-print()
-
-print("Total geometric length of Zoey: " + "%.3f" % calc_file_dist(stripe_list2)[0] + "cm")
-print("Average Geometric length of Zoey per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list2) + "cm")
-print("Total time of Zoey: " + "%.3f" % calc_file_time(stripe_list2) + "sec")
-print("Total waiting time of Zoey: " + "%.3f" % calc_waiting_time(stripe_list2) + "sec")
-print("Average time of Zoey per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list2) + "sec")
-print("Average speed of Zoey: " + "%.3f" % calc_average_speed_in_file(stripe_list2) + "cm/sec")
-
+# print()
+#
+# print("Total geometric length of Zoey: " + "%.3f" % calc_file_dist(stripe_list2)[0] + "cm")
+# print("Average Geometric length of Zoey per stripe: " + "%.3f" % calc_dist_average_of_stripe(stripe_list2) + "cm")
+# print("Total time of Zoey: " + "%.3f" % calc_file_time(stripe_list2) + "sec")
+# print("Total waiting time of Zoey: " + "%.3f" % calc_waiting_time(stripe_list2) + "sec")
+# print("Average time of Zoey per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list2) + "sec")
+# print("Average speed of Zoey: " + "%.3f" % calc_average_speed_in_file(stripe_list2) + "cm/sec")

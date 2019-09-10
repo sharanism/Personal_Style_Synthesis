@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft, fftfreq
+from scipy.fftpack import fft, ifft, fftfreq
 import random
 
 f = 5  # Frequency [Hz]
@@ -20,12 +20,21 @@ def plot_amplitude_vs_time():
 
 def plot_freq_magnitude_vs_freq():
     X = fft(x)
-    freq = fftfreq(len(x)) * f_s
-    plt.plot(freq, np.abs(X))
+    freq = fftfreq(len(X)) * f_s
+
+
+    # xi = ifft(X)
+
+
+    # plt.plot(t, xi)
+
+    # plt.plot(freq, abs(X))  # this line is not good because it connect the first and the last points
+    plt.plot(freq[f_s:], abs(X)[f_s:], 'b')
+    plt.plot(freq[0:f_s], abs(X)[0:f_s], 'b')
     plt.xlabel('Frequency [Hz]')
     plt.ylabel('Frequency Magnitude')
     plt.show()
 
 
 # plot_amplitude_vs_time()
-# plot_freq_magnitude_vs_freq()
+plot_freq_magnitude_vs_freq()
