@@ -4,6 +4,8 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import scipy.fftpack
+import copy
+from scipy.fftpack import fft, ifft, fftfreq
 
 
 def get_data_file(path):
@@ -69,6 +71,14 @@ def get_stripes_as_one(stripe_list):
             value.extend(stripe_list[i][key])
 
     return stripe_list[0]
+
+
+def string_to_int(string_array):
+    int_array = []
+    for string in string_array:
+        int_array.append(float(string))
+
+    return int_array
 
 
 def calc_dist_2D(old_x, new_x, old_y, new_y):
@@ -258,7 +268,33 @@ def plot_speed_vs_stripeIndex(stripe_list):
 # Frequencies #
 ###############
 ################################################################################
-def get_array_of_destances(x_array, y_array):
+
+
+f = 5  # Frequency [Hz]
+f_s = 100  # Sampling rate (number of measurements per second)
+w = 2 * np.pi * f
+
+def get_fourier(stripe):
+    time_list = string_to_int(stripe['time'])
+    t = np.asarray([time / (2.0 * np.pi * f) for time in time_list])
+    x = np.asarray(get_array_of_distances(list(stripe['x']), list(stripe['y'])))
+
+    X = fft(x)
+    f_s = len(X) / 2
+    freq = fftfreq(len(X)) * f_s
+
+    plt.plot(freq, abs(X))
+    # plt.plot(freq[f_s:], abs(X)[f_s:], 'b')
+    # plt.plot(freq[0:f_s], abs(X)[0:f_s], 'b')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Frequency Magnitude')
+    plt.show()
+
+    # plt.plot(t, x)
+    # plt.show()
+
+
+def get_array_of_distances(x_array, y_array):
     arr = [0.0]
     for i in range(1, len(x_array)):
         arr.append(calc_dist_2D(x_array[i - 1], x_array[i], y_array[i - 1], y_array[i]))
@@ -267,10 +303,9 @@ def get_array_of_destances(x_array, y_array):
 
 
 def length_vs_time(stripe):
-    x = np.asarray(stripe['time'])
-    y = np.asarray(get_array_of_destances(list(stripe['x']), list(stripe['y'])))
-
-    plt.plot(x, y)
+    sec = np.asarray(string_to_int(stripe['time']))
+    len = np.asarray(get_array_of_distances(list(stripe['x']), list(stripe['y'])))
+    plt.plot(sec, len)
     plt.show()
 
 
@@ -284,7 +319,8 @@ input2 = "data/week01/D_01/zoey/zoey__130319_1208_D_01.txt"
 stripe_list1 = get_stripes(get_data_file(input1))
 # stripe_list2 = get_stripes(get_data_file(input2))
 
-length_vs_time(get_stripes_as_one(stripe_list1))
+get_fourier(get_stripes_as_one(copy.deepcopy(stripe_list1)))
+length_vs_time(get_stripes_as_one(copy.deepcopy(stripe_list1)))
 
 print("In Dubby picture: ")
 print()

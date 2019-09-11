@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft, ifft, fftfreq
-import random
 
 f = 5  # Frequency [Hz]
 f_s = 100  # Sampling rate (number of measurements per second)
