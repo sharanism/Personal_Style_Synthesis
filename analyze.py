@@ -340,3 +340,37 @@ print("Average speed of Aliza: " + "%.3f" % calc_average_speed_in_file(stripe_li
 # print("Total waiting time of Zoey: " + "%.3f" % calc_waiting_time(stripe_list2) + "sec")
 # print("Average time of Zoey per stripe: " + "%.3f" % calc_time_average_of_stripe(stripe_list2) + "sec")
 # print("Average speed of Zoey: " + "%.3f" % calc_average_speed_in_file(stripe_list2) + "cm/sec")
+
+"""
+pressure=sas1['pressure']
+
+import numpy as np
+from scipy import signal
+#import matplotlib.pyplot as plt
+
+fs = 58.36330929
+N = len(pressure)
+
+time = np.arange(N) / float(fs)
+
+x=np.asarray(pressure)
+
+avgP = np.average(x)
+stdP= np.std(x)
+print('avg pressure=',avgP)
+print('std pressure=',stdP)
+plt.figure(figsize=(15,7))
+plt.plot(time,x)
+plt.ylabel('Pressure')
+plt.xlabel('Time [sec]')
+plt.show()
+
+window = signal.boxcar(int(300))
+#scipy.signal.get_window('hann',300)
+f, t, Sxx = signal.spectrogram(x, fs,window,noverlap=25)
+plt.figure(figsize=(15,7))
+plt.pcolormesh(t, f, Sxx)
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.show()
+"""
