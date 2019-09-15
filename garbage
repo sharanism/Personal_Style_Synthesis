@@ -1,0 +1,43 @@
+    in File.py:
+    # def active_time(self):
+    #     """
+    #     :return: total active time (without pauses time)
+    #     """
+    #     time = 0.0
+    #     for stroke in self._data:
+    #         if not stroke.is_pause():
+    #             time += stroke.total_time()
+    #
+    #     return time
+
+
+    in Analyzer.py:
+    # @staticmethod
+    # def get_file2(data):
+    #     strokes_list = []
+    #     stroke = dict()
+    #     counter = 0
+    #     number_of_seq_pauses = 0
+    #
+    #     for i, time in enumerate(data['time']):
+    #         if time == 'Pause':
+    #             # deal with pause sequences of two or more
+    #             if data['time'][i+1] == 'Pause':
+    #                 number_of_seq_pauses += 1
+    #                 counter = i + 1
+    #                 continue
+    #
+    #             for column in data:
+    #                 stroke[column] = data[column][counter:i]
+    #             counter = i + 1
+    #             strokes_list.append(Stroke(stroke))
+    #             stroke = dict()
+    #             if i + 2 == len(data['time']):  # end of file
+    #                 break
+    #
+    #             # create pause-stroke
+    #             pause = [list(data['time'])[i-1 - number_of_seq_pauses], list(data['time'])[i+1]]
+    #             strokes_list.append(Stroke(pause, pause=True))
+    #             number_of_seq_pauses = 0
+    #
+    #     return File(strokes_list)
