@@ -1,6 +1,7 @@
 import pandas as pd
 from Stroke import Stroke
-from File import File
+from Drawing import Drawing
+import os
 
 
 class Analyzer:
@@ -16,10 +17,10 @@ class Analyzer:
         return pd.read_csv(path, delimiter='\t')
 
     @staticmethod
-    def get_file(data):
+    def get_strokes(data):
         """
         :param data: DataFrame object
-        :return: new File object that represent the data
+        :return: list of strokes that represent the data
         """
         stroke_list = []
         stroke = dict()
@@ -43,16 +44,40 @@ class Analyzer:
                 stroke_list.append(Stroke(stroke))
                 stroke = dict()
 
-        return File(stroke_list)
+        return stroke_list
+
+    @staticmethod
+    def get_ref_path(data):
+        """
+        :param data: DataFrame object
+        :return: path to reference picture
+        """
+        ref_name = data['time'][len(data['time'])-1].split(' ')[1]
+        return "ref_pics/" + ref_name + ".JPG"
+
+    @staticmethod
+    def get_pic_path(path):
+        ref_folder = path.split('/')[1]
+        participant_name = path.split('/')[2]
+        for file in os.listdir("data/" + ref_folder + "/" + participant_name):
+            if "DS_Store" not in file:
+                if file.endswith(".png"):
+                    return "data/" + ref_folder + "/" + participant_name + "/" + file
+
+    @staticmethod
+    def create_drawing(path):
+        data = Analyzer.get_data_file(path)
+        pic_path = Analyzer.get_pic_path(path)
+        ref_path = Analyzer.get_ref_path(data)
+        if pic_path is not None and ref_path is not None:
+            return Drawing(Analyzer.get_strokes(data), pic_path, ref_path)
 
 
 if __name__ == "__main__":
     input1 = "data/D_01/aliza/aliza__130319_0935_D_01.txt"
     input2 = "data/D_01/zoey/zoey__130319_1208_D_01.txt"
-
-    # b = Analyzer.get_file(Analyzer.get_data_file(input2))
-    # a = Analyzer.get_file(Analyzer.get_data_file(input1))
-    # a_one = a.get_strokes_as_one()
-    from Person import Person
-    person = Person("aliza")
-    person.plot_all_person_pictures()
+    # a = Analyzer.create_drawing(input1)
+    # a.plot_picture()
+    from Participant import Participant
+    person = Participant("aliza")
+    person.plot_participant_pictures()
