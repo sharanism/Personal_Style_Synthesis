@@ -2,12 +2,11 @@ import pandas as pd
 from Stroke import Stroke
 from Drawing import Drawing
 import os
+import numpy as np
+import Constants
 
 
 class Analyzer:
-    MIN_SIZE_OF_STROKE = 2
-    TIME_STAMP = 0.017
-
     @staticmethod
     def get_data_file(path):
         """
@@ -23,28 +22,39 @@ class Analyzer:
         :return: list of strokes that represent the data
         """
         stroke_list = []
-        stroke = dict()
+        stroke = []
         start_stroke_location = 0  # the location of the next stroke in data
         current_time = 0.0
 
         for i, time in enumerate(data['time']):
             if time == 'Pause':
-                if i - start_stroke_location < Analyzer.MIN_SIZE_OF_STROKE:  # MIN_SIZE_OF_STROKE = 2
+                if i - start_stroke_location < Constants.MIN_SIZE_OF_STROKE:  # MIN_SIZE_OF_STROKE = 2
                     start_stroke_location = i + 1
                     continue
 
-                for feature in data:
-                    stroke[feature] = data[feature][start_stroke_location:i]
-                    if feature == 'time':
-                        for j in range(start_stroke_location, i):
-                            stroke['time'][j] = current_time
-                            current_time += Analyzer.TIME_STAMP  # TIME_STAMP = 0.017
+                for index, feature in enumerate(data):
+                    stroke.append(Analyzer.string2float_array(data[feature][start_stroke_location:i]))
+                    if index == Constants.TIME:
+                        for j in range(len(stroke[0])):
+                            stroke[index][j] = current_time
+                            current_time += Constants.TIME_STAMP  # TIME_STAMP = 0.017
 
                 start_stroke_location = i + 1
                 stroke_list.append(Stroke(stroke))
-                stroke = dict()
+                stroke = []
 
         return stroke_list
+
+    @staticmethod
+    def string2float_array(string_array):
+        """
+        :param string_array: array with numbers represents by strings
+        :return: numpy array with float values instead of strings
+        """
+        array = []
+        for value in string_array:
+            array.append(float(value))
+        return np.asarray(array)
 
     @staticmethod
     def get_ref_path(data):
@@ -76,8 +86,11 @@ class Analyzer:
 if __name__ == "__main__":
     input1 = "data/D_01/aliza/aliza__130319_0935_D_01.txt"
     input2 = "data/D_01/zoey/zoey__130319_1208_D_01.txt"
+    draw = Analyzer.create_drawing(input1)
+    draw.speed_vs_time()
+    draw.plot_picture()
     # a = Analyzer.create_drawing(input1)
     # a.plot_picture()
-    from Participant import Participant
-    person = Participant("aliza")
-    person.plot_participant_pictures()
+    # from Participant import Participant
+    # person = Participant("aliza")
+    # person.plot_participant_pictures()
