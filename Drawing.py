@@ -126,7 +126,9 @@ class Drawing:
         plt.figure(figsize=(20, 10))
         plt.subplot(1, 2, 1)
         for stroke in self._data:
-            plt.plot(stroke.get_feature('x'), -stroke.get_feature('y'), linewidth=1, color='black')
+            plt.plot(stroke.get_feature('x'), -stroke.get_feature('y'),
+                     linewidth=10*stroke.average('pressure'),
+                     color='black')
 
         plt.subplot(1, 2, 2)
         plt.imshow(mpimg.imread(self._ref_path))
