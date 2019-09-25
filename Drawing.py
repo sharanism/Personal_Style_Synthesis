@@ -123,18 +123,26 @@ class Drawing:
         self.feature_vs_time("length", "pixel")
 
     def plot_picture(self):
-        """
-        @TODO - rotate
-        """
-        one_stroke = self.get_strokes_as_one()
-
-        plt.subplot(1, 3, 1)
-        plt.scatter(one_stroke.get_feature('x'), one_stroke.get_feature('y'), s=0.5,)
-
+        plt.figure(figsize=(20, 10))
         plt.subplot(1, 2, 1)
-        plt.imshow(mpimg.imread(self._pic_path))
+        for stroke in self._data:
+            plt.plot(stroke.get_feature('x'), -stroke.get_feature('y'), linewidth=1, color='black')
 
         plt.subplot(1, 2, 2)
         plt.imshow(mpimg.imread(self._ref_path))
 
         plt.show()
+
+
+        # plt.figure(figsize=(24,8))
+        # plt.subplot(1, 3, 1)
+        # for stroke in self._data:
+        #     plt.plot(stroke.get_feature('x'), -stroke.get_feature('y'), linewidth=1, color='black')
+        #
+        # plt.subplot(1, 3, 2)
+        # plt.imshow(mpimg.imread(self._pic_path))
+        #
+        # plt.subplot(1, 3, 3)
+        # plt.imshow(mpimg.imread(self._ref_path))
+        #
+        # plt.show()
